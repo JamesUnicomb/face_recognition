@@ -31,13 +31,15 @@ class FaceRecognition:
                  database_names    = os.listdir(pkg_path + '/training_data'),
                  n_input           = 128,
                  n_output          = len(os.listdir(pkg_path + '/training_data')),
-                 load_model        = True):
+                 load_model        = True,
+                 prob_threshhold   = 0.97):
 
 
         # define global variables
         self.n_input        = n_input
         self.n_output       = n_output
         self.database_names = np.array(database_names)
+        self.prob_threshold = prob_threshhold
 
 
         # define network for face prediction
@@ -90,8 +92,9 @@ class FaceRecognition:
 
 
         # start the ros pipeline
-        self.faces_pub     = rospy.Publisher('face_recognition/marked_faces', Image, queue_size=0)
-        self.face_msgs_pub = rospy.Publisher('face_recognition/detected_faces', DetectedFaces, queue_size=0)
+        self.face_features_pub     = rospy.Publisher('face_recognition/marked_faces', Image, queue_size=0)
+        self.face_labels_pub       = rospy.Publisher('face_recognition/labelled_faces', Image, queue_size=0)
+        self.face_msgs_pub         = rospy.Publisher('face_recognition/detected_faces', DetectedFaces, queue_size=0)
 
         self.bridge = CvBridge()
 
@@ -110,30 +113,51 @@ class FaceRecognition:
         except CvBridgeError as e:
             print e
 
+        features_image = image
+        labels_image   = image
+
         detected_faces = self.face_detector(image, 1)
         
         for i, face_rect in enumerate(detected_faces):
+            # Get bounding box coordinates
+            bbox_points    = np.array([face_rect.left(), face_rect.top(), face_rect.right(), face_rect.bottom()])
+
             # Get the the face's pose
             pose_landmarks = self.face_pose_predictor(image, face_rect)
             pose_points    = np.array([[p.x, p.y] for p in pose_landmarks.parts()])
 
             # using resnet, find the face embeddings
-            embeddings = np.array(self.face_recognition_model.compute_face_descriptor(image, pose_landmarks, 1))
+            embeddings       = np.array(self.face_recognition_model.compute_face_descriptor(image, pose_landmarks, 1))
             prediction_probs = self.predict_faces([embeddings])
+            max_prob         = max(prediction_probs[0])
             prediction_index = np.argmax(prediction_probs, axis = 1)
+            predicted_name   = self.database_names[prediction_index][0]
 
-            faces_detected.names.append(*self.database_names[prediction_index])
+            # add information to the ROS message
+            faces_detected.names.append(predicted_name)
+            faces_detected.probability.append(max_prob)
 
             try:
                 for (x, y) in pose_points:
-                    cv2.circle(image, (x, y), 1, (255, 255, 255), -1)
+                    cv2.circle(features_image, (x, y), 1, (255, 255, 255), -1)
             except UnboundLocalError:
                 pass
+
+            if max_prob > self.prob_threshold:
+                try:
+                    cv2.putText(labels_image, predicted_name, (bbox_points[0], bbox_points[3]), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255))
+                except UnboundLocalError:
+                    pass
 
         self.face_msgs_pub.publish(faces_detected)
 
         try:
-            self.faces_pub.publish(self.bridge.cv2_to_imgmsg(image, "bgr8"))
+            self.face_features_pub.publish(self.bridge.cv2_to_imgmsg(features_image, "bgr8"))
+        except CvBridgeError as e:
+            print e
+
+        try:
+            self.face_labels_pub.publish(self.bridge.cv2_to_imgmsg(labels_image, "bgr8"))
         except CvBridgeError as e:
             print e
 
