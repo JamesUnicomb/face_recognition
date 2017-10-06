@@ -113,8 +113,8 @@ class FaceRecognition:
         except CvBridgeError as e:
             print e
 
-        features_image = image
-        labels_image   = image
+        features_image = image.copy()
+        labels_image   = image.copy()
 
         detected_faces = self.face_detector(image, 1)
         
@@ -153,13 +153,13 @@ class FaceRecognition:
 
         try:
             self.face_features_pub.publish(self.bridge.cv2_to_imgmsg(features_image, "bgr8"))
-        except CvBridgeError as e:
-            print e
+        except CvBridgeError, ROSException:
+            pass
 
         try:
             self.face_labels_pub.publish(self.bridge.cv2_to_imgmsg(labels_image, "bgr8"))
-        except CvBridgeError as e:
-            print e
+        except CvBridgeError, ROSException:
+            pass
 
 
 
