@@ -16,6 +16,7 @@ from lasagne.objectives import categorical_crossentropy
 
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
+from rospy.exceptions import ROSException
 
 from sensor_msgs.msg import Image
 from face_recognition_msgs.msg import DetectedFaces
@@ -101,7 +102,6 @@ class FaceRecognition:
         self.camera_sub = rospy.Subscriber(image_topic, Image, self.camera_cb)
 
 
-
     def camera_cb(self,
                   data):
         faces_detected = DetectedFaces()
@@ -149,19 +149,15 @@ class FaceRecognition:
                 except UnboundLocalError:
                     pass
 
-        self.face_msgs_pub.publish(faces_detected)
-
         try:
-            self.face_features_pub.publish(self.bridge.cv2_to_imgmsg(features_image, "bgr8"))
-        except CvBridgeError, ROSException:
+            self.face_msgs_pub.publish(faces_detected)
+            try:
+                self.face_features_pub.publish(self.bridge.cv2_to_imgmsg(features_image, "bgr8"))
+                self.face_labels_pub.publish(self.bridge.cv2_to_imgmsg(labels_image, "bgr8"))
+            except CvBridgeError as e:
+                print e
+        except ROSException:
             pass
-
-        try:
-            self.face_labels_pub.publish(self.bridge.cv2_to_imgmsg(labels_image, "bgr8"))
-        except CvBridgeError, ROSException:
-            pass
-
-
 
 
     def get_data(self):
@@ -191,7 +187,6 @@ class FaceRecognition:
                     outputs.append(np.eye(self.n_output)[k])
 
         return embeddings, outputs
-
 
 
     def train_network(self,
