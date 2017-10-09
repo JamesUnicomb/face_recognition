@@ -132,10 +132,12 @@ class FaceRecognition:
             max_prob         = max(prediction_probs[0])
             prediction_index = np.argmax(prediction_probs, axis = 1)
             predicted_name   = self.database_names[prediction_index][0]
+            prediction_dist  = np.dot(prediction_probs[0], prediction_probs[0])
 
             # add information to the ROS message
             faces_detected.names.append(predicted_name)
             faces_detected.probability.append(max_prob)
+            faces_detected.distances.append(prediction_dist)
 
             try:
                 for (x, y) in pose_points:
