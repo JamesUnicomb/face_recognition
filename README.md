@@ -2,7 +2,7 @@
 A face recognition model using the facebook embedder model with dlib. 
 An lasagne MLP is used for distinguishing between faces in the database.
 
-[![Watch the video](https://github.com/JamesUnicomb/face_recognition/blob/master/screenshot.png)](https://www.youtube.com/watch?v=aa7Rk-uxxjI)
+[![Play the gif](https://github.com/JamesUnicomb/face_recognition/blob/master/faces_encoded.gif)](https://www.youtube.com/watch?v=aa7Rk-uxxjI)
 Video Link: https://www.youtube.com/watch?v=aa7Rk-uxxjI
 
 ## Face Messages
