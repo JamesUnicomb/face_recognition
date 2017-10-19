@@ -29,9 +29,5 @@ python path_to_face_recognition/scripts/train_face_recognition.py
 
 This will save a model in the face_recognition/models folder.
 
-You will need to download the relevant models and place them in the models folder:
-https://github.com/ageitgey/face_recognition_models/blob/master/face_recognition_models/models/dlib_face_recognition_resnet_model_v1.dat
-https://github.com/ageitgey/face_recognition_models/blob/master/face_recognition_models/models/shape_predictor_68_face_landmarks.dat
-
 ## Future Work
 Work on a way of recognising unknown faces and rejecting faces not in the database.
