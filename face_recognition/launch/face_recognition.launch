@@ -1,0 +1,4 @@
+<launch>
+  <!--include file=(your camera launch file) -->
+  <node pkg="face_recognition" name="face_recognition_node" type="face_recognition_node.py" />
+</launch>

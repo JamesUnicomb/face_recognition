@@ -18,7 +18,7 @@ Probabilities and distances for each prediction are given for each face measurem
 ## Adapting to your Database
 In the face_recognition/training_data folder, make a list of folders of people you want your algorithm to detect.
 
-For the current code, there are three people: James, Matthew and Victoria. Put phots of each person in each of these folders (for your people).
+For the current code, there are five people: Mark, Jez, Johnson, Sophie and Dobby. Put photos of each person in each of these folders (for your people).
 
 Note: each image can only contain one person.
 
